@@ -1,0 +1,834 @@
+@page "/admin"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@attribute [Authorize(Roles = "Admin")]
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
+@using System.ComponentModel.DataAnnotations
+@using System.Linq
+@using System.Security.Claims
+@using t12Project.Data
+@inject AdminUserService AdminUserService
+@inject ApplicationDbContext DbContext
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ILogger<AdminDashboard> Logger
+@inject IJSRuntime JS
+@implements IDisposable
+
+<PageTitle>Admin Dashboard - LoadHitch</PageTitle>
+
+<section class="min-h-screen bg-slate-50 py-12">
+    <div class="max-w-6xl mx-auto px-6 space-y-8">
+        @if (_toasts.Count > 0)
+        {
+            <div class="fixed top-4 right-4 z-50 space-y-2">
+                @foreach (var toast in _toasts)
+                {
+                    var bg = toast.Kind == "success" ? "bg-green-50 border-green-200 text-green-800" : "bg-red-50 border-red-200 text-red-800";
+                    <div class="@($"rounded-xl border px-4 py-3 shadow-sm text-sm {bg}")">
+                        @toast.Message
+                    </div>
+                }
+            </div>
+        }
+
+        <!-- Header -->
+        <div class="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+            <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                    <p class="text-sm font-medium uppercase tracking-wider text-teal-500">Admin Control Center</p>
+                    <h1 class="mt-2 text-3xl font-bold text-slate-900">User Management</h1>
+                    <p class="mt-2 text-slate-600">Manage accounts, rotate roles, and block malicious actors.</p>
+                </div>
+                <div class="flex gap-3">
+                    <button class="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors" @onclick="LoadUsersAsync" disabled="@_isLoading">
+                        @(_isLoading ? "Refreshing..." : "Refresh")
+                    </button>
+                    <a href="/account/profile" class="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+                        My Profile
+                    </a>
+                    <a href="/api/auth/signout" class="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+                        Sign out
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create User & Stats Grid -->
+        <div class="grid gap-8 lg:grid-cols-2">
+            <!-- Create User Form -->
+            <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <p class="text-sm font-medium uppercase tracking-wider text-teal-500">Create Account</p>
+                        <h2 class="mt-1 text-xl font-bold text-slate-900">Add New User</h2>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(_createMessage))
+                {
+                    <div class="mb-4 rounded-xl bg-teal-50 border border-teal-200 px-4 py-3 text-sm text-teal-700">@_createMessage</div>
+                }
+
+                <EditForm EditContext="_createEditContext" OnValidSubmit="CreateUserAsync">
+                    <DataAnnotationsValidator />
+                    <div class="grid gap-4 md:grid-cols-2">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1.5">Full name</label>
+                            <InputText class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:outline-none" @bind-Value="_newUser.FullName" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
+                            <InputText type="email" class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:outline-none" @bind-Value="_newUser.Email" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1.5">Password</label>
+                            <InputText type="password" class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:outline-none" @bind-Value="_newUser.Password" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1.5">Role</label>
+                            <InputSelect class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:outline-none" @bind-Value="_newUser.Role">
+                                @foreach (var role in _roles)
+                                {
+                                    <option value="@role">@role</option>
+                                }
+                            </InputSelect>
+                        </div>
+                    </div>
+                    <button type="submit" class="mt-6 w-full rounded-full bg-teal-500 px-6 py-3 text-sm font-medium text-white hover:bg-teal-600 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors" disabled="@_isCreating">
+                        @(_isCreating ? "Creating..." : "Create User")
+                    </button>
+                </EditForm>
+            </div>
+
+            <!-- Stats & Load Management -->
+            <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <p class="text-sm font-medium uppercase tracking-wider text-teal-500">Statistics</p>
+                <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                        <p class="text-sm text-slate-600">Total Accounts</p>
+                        <p class="mt-2 text-3xl font-bold text-slate-900">@(_users?.Count ?? 0)</p>
+                        <p class="text-xs text-slate-500">Admin/Driver/Customer</p>
+                    </div>
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                        <p class="text-sm text-slate-600">Blocked Users</p>
+                        <p class="mt-2 text-3xl font-bold text-red-600">@(_users?.Count(u => u.IsBlocked) ?? 0)</p>
+                        <p class="text-xs text-slate-500">Currently locked out</p>
+                    </div>
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                        <p class="text-sm text-slate-600">Drivers</p>
+                        <p class="mt-2 text-3xl font-bold text-slate-900">@(_users?.Count(u => u.Role == "Driver") ?? 0)</p>
+                        <p class="text-xs text-slate-500">Active drivers</p>
+                    </div>
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                        <p class="text-sm text-slate-600">Customers</p>
+                        <p class="mt-2 text-3xl font-bold text-slate-900">@(_users?.Count(u => u.Role == "Customer") ?? 0)</p>
+                        <p class="text-xs text-slate-500">Shippers</p>
+                    </div>
+                </div>
+                
+                <!-- Load Management Actions -->
+                <div class="mt-6 pt-6 border-t border-slate-200">
+                    <p class="text-sm font-medium uppercase tracking-wider text-teal-500 mb-4">Load Management</p>
+                    @if (!string.IsNullOrWhiteSpace(_loadResetMessage))
+                    {
+                        <div class="mb-4 rounded-xl @(_loadResetSuccess ? "bg-green-50 border-green-200 text-green-700" : "bg-red-50 border-red-200 text-red-700") border px-4 py-3 text-sm">
+                            @_loadResetMessage
+                        </div>
+                    }
+                    <button class="w-full rounded-full bg-amber-500 px-6 py-3 text-sm font-medium text-white hover:bg-amber-600 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors" 
+                            @onclick="ResetAllLoadStatuses" 
+                            disabled="@_isResettingLoads">
+                        @(_isResettingLoads ? "Resetting..." : "Reset All Loads & Clear Lifecycle Data")
+                    </button>
+                    <p class="mt-2 text-xs text-slate-500">Resets all loads to "Available", clears driver assignments, lifecycle timestamps (Accepted/PickedUp/Delivered/Completed), delivery tracking, and deletes all bookings</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between mb-6">
+                <div>
+                    <p class="text-sm font-medium uppercase tracking-wider text-teal-500">Directory</p>
+                    <h2 class="mt-1 text-xl font-bold text-slate-900">All Users</h2>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <input class="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:outline-none"
+                           placeholder="Search by name or email..."
+                           @bind-value="SearchText"
+                           @bind-value:event="oninput" />
+                    <select class="rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:outline-none"
+                            @bind="PageSize">
+                        <option value="10">10 / page</option>
+                        <option value="25">25 / page</option>
+                        <option value="50">50 / page</option>
+                    </select>
+                </div>
+            </div>
+
+            @if (_tableMessage is not null)
+            {
+                <div class="mb-4 rounded-xl bg-blue-50 border border-blue-200 px-4 py-3 text-sm text-blue-700">@_tableMessage</div>
+            }
+
+            @if (_isLoading)
+            {
+                <div class="flex justify-center py-8">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500"></div>
+                </div>
+            }
+            else if (_users?.Count == 0)
+            {
+                <p class="text-center py-8 text-slate-500">No users yet. Create one above.</p>
+            }
+            else if (_users is not null)
+            {
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-left text-sm">
+                        <thead>
+                            <tr class="border-b border-slate-200">
+                                <th class="px-4 py-3 text-xs font-medium uppercase tracking-wider text-slate-500">Name</th>
+                                <th class="px-4 py-3 text-xs font-medium uppercase tracking-wider text-slate-500">Email</th>
+                                <th class="px-4 py-3 text-xs font-medium uppercase tracking-wider text-slate-500">Role</th>
+                                <th class="px-4 py-3 text-xs font-medium uppercase tracking-wider text-slate-500">Status</th>
+                                <th class="px-4 py-3 text-xs font-medium uppercase tracking-wider text-slate-500 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            @foreach (var user in _users)
+                            {
+                                <tr class="hover:bg-slate-50">
+                                    <td class="px-4 py-4 font-medium text-slate-900">@user.Name</td>
+                                    <td class="px-4 py-4 text-slate-600">@user.Email</td>
+                                    <td class="px-4 py-4">
+                                        <select class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:outline-none" value="@user.Role" @onchange="eventArgs => ChangeRoleAsync(user, eventArgs.Value?.ToString())" disabled="@(user.Id == _currentUserId)" title="@(user.Id == _currentUserId ? "Cannot change your own role" : string.Empty)">
+                                            @foreach (var role in _roles)
+                                            {
+                                                <option value="@role">@role</option>
+                                            }
+                                        </select>
+                                    </td>
+                                    <td class="px-4 py-4">
+                                        @if (user.IsBlocked)
+                                        {
+                                            <span class="inline-flex items-center rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-700">Blocked</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">Active</span>
+                                        }
+                                    </td>
+                                    <td class="px-4 py-4 text-right space-x-2">
+                                        <button class="rounded-full border border-teal-300 px-3 py-1.5 text-xs font-medium text-teal-700 hover:bg-teal-50 transition-colors" @onclick="() => OpenEditModal(user)">Edit</button>
+                                        @if (user.Role != "Admin")
+                                        {
+                                            @if (user.IsBlocked)
+                                            {
+                                                <button class="rounded-full border border-green-300 px-3 py-1.5 text-xs font-medium text-green-700 hover:bg-green-50 transition-colors" @onclick="() => ToggleBlockAsync(user, false)">Unblock</button>
+                                            }
+                                            else
+                                            {
+                                                <button class="rounded-full border border-amber-300 px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-50 transition-colors" @onclick="() => ToggleBlockAsync(user, true)">Block</button>
+                                            }
+                                            <button class="rounded-full border border-red-300 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 transition-colors" @onclick="() => PromptDelete(user)" disabled="@(user.Id == _currentUserId)" title="@(user.Id == _currentUserId ? "You cannot delete your own account" : "Delete user")">Delete</button>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-xs text-slate-400 italic">Protected</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="mt-4 flex items-center justify-between text-sm text-slate-600">
+                    <div>
+                        @if (_totalUsers > 0)
+                        {
+                            var start = ((_page - 1) * _pageSize) + 1;
+                            var end = Math.Min(_totalUsers, _page * _pageSize);
+                            <span>Showing @start - @end of @_totalUsers users</span>
+                        }
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                @onclick="async () => await GoToPage(_page - 1)"
+                                disabled="@(_page <= 1)">
+                            Previous
+                        </button>
+                        <span class="text-xs text-slate-500">Page @_page</span>
+                        <button class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                @onclick="async () => await GoToPage(_page + 1)"
+                                disabled="@(_page * _pageSize >= _totalUsers)">
+                            Next
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Edit User Modal -->
+@if (_showEditModal && _editingUser is not null)
+{
+    <div id="editModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" @onclick="CloseEditModal" @onkeydown="HandleModalKeyDown" @ref="_editModalRef">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full mx-4 p-6" @onclick:stopPropagation>
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-slate-900">Edit User</h2>
+                <button class="text-slate-400 hover:text-slate-600" @onclick="CloseEditModal">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(_editMessage))
+            {
+                <div class="mb-4 rounded-xl bg-teal-50 border border-teal-200 px-4 py-3 text-sm text-teal-700">@_editMessage</div>
+            }
+            @if (!string.IsNullOrWhiteSpace(_editError))
+            {
+                <div class="mb-4 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_editError</div>
+            }
+
+            <EditForm EditContext="_editUserContext" OnValidSubmit="SaveUserAsync">
+                <DataAnnotationsValidator />
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Full Name</label>
+                        <InputText class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:outline-none" @bind-Value="_editingUser.FullName" />
+                        <ValidationMessage For="@(() => _editingUser.FullName)" class="mt-1 text-xs text-red-600" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
+                        <InputText type="email" class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:outline-none" @bind-Value="_editingUser.Email" />
+                        <ValidationMessage For="@(() => _editingUser.Email)" class="mt-1 text-xs text-red-600" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Role</label>
+                        <InputSelect class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:outline-none" @bind-Value="_editingUser.Role">
+                            @foreach (var role in _roles)
+                            {
+                                <option value="@role">@role</option>
+                            }
+                        </InputSelect>
+                    </div>
+                </div>
+                <div class="mt-6 flex gap-3">
+                    <button type="submit" class="flex-1 rounded-full bg-teal-500 px-6 py-3 text-sm font-medium text-white hover:bg-teal-600 disabled:bg-slate-300 transition-colors" disabled="@_isSaving">
+                        @(_isSaving ? "Saving..." : "Save Changes")
+                    </button>
+                    <button type="button" class="rounded-full border border-slate-300 px-6 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors" @onclick="CloseEditModal">
+                        Cancel
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<!-- Delete Confirmation Modal -->
+@if (_showDeleteConfirmModal && !string.IsNullOrEmpty(_confirmDeleteUserId))
+{
+    <div id="deleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" @onclick="() => _showDeleteConfirmModal = false" @onkeydown="HandleModalKeyDown" @ref="_deleteModalRef">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full mx-4 p-6" @onclick:stopPropagation>
+            <div class="mb-4">
+                <h3 class="text-lg font-bold text-slate-900">Confirm deletion</h3>
+                <p class="mt-2 text-sm text-slate-600">Are you sure you want to permanently delete <strong>@_confirmDeleteUserName</strong>? This action cannot be undone.</p>
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+                <button class="rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" @onclick="() => _showDeleteConfirmModal = false">Cancel</button>
+                <button class="rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700" @onclick="ConfirmDeleteAsync">Delete</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private readonly AdminCreateUserModel _newUser = new();
+    private EditContext? _createEditContext;
+    private readonly AccountRole[] _roles = Enum.GetValues<AccountRole>();
+    private List<AdminUserSummary>? _users;
+    private int _totalUsers;
+    private int _page = 1;
+    private int _pageSize = 10;
+    private string? _search;
+    private bool _isLoading;
+    private bool _isCreating;
+    private string? _createMessage;
+    private string? _tableMessage;
+
+    // Edit modal state
+    private bool _showEditModal;
+    private EditUserModel? _editingUser;
+    private EditContext? _editUserContext;
+    private string? _editingUserId;
+    private bool _isSaving;
+    private string? _editMessage;
+    private string? _editError;
+    private ElementReference _editModalRef;
+    private ElementReference _deleteModalRef;
+    private Func<Task>? _modalCleanup;
+    private readonly Queue<(string Kind, string Message)> _toasts = new();
+    private const int ToastDurationMs = 3500;
+    
+    // Load reset state
+    private bool _isResettingLoads;
+    private string? _loadResetMessage;
+    private bool _loadResetSuccess;
+    
+    private string? SearchText
+    {
+        get => _search;
+        set
+        {
+            _search = value;
+            _page = 1;
+            _ = LoadUsersAsync();
+        }
+    }
+
+    private int PageSize
+    {
+        get => _pageSize;
+        set
+        {
+            _pageSize = value;
+            _page = 1;
+            _ = LoadUsersAsync();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _createEditContext = new EditContext(_newUser);
+
+        try
+        {
+            // determine current user id to prevent self-deletion / self-demotion
+            var auth = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var u = auth.User;
+            _currentUserId = u.FindFirstValue(ClaimTypes.NameIdentifier);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Failed to read current user id in AdminDashboard.OnInitializedAsync");
+        }
+
+        await LoadUsersAsync();
+    }
+
+    private async Task LoadUsersAsync()
+    {
+        _isLoading = true;
+        _tableMessage = null;
+        StateHasChanged();
+
+        try
+        {
+            var result = await AdminUserService.GetUsersAsync(_page, _pageSize, _search);
+            _users = result.Items.ToList();
+            _totalUsers = result.TotalCount;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading users");
+            _tableMessage = "Failed to load users. See logs for details.";
+            _users = new List<AdminUserSummary>();
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task CreateUserAsync()
+    {
+        _isCreating = true;
+        _createMessage = null;
+        StateHasChanged();
+
+        try
+        {
+            var request = new AdminCreateUserRequest(_newUser.FullName, _newUser.Email, _newUser.Password, _newUser.Role);
+            var result = await AdminUserService.CreateUserAsync(request);
+            _createMessage = result.Message;
+
+            if (result.Succeeded)
+            {
+                _newUser.Reset();
+                await LoadUsersAsync();
+                ShowToast("success", "User created");
+            }
+            else
+            {
+                ShowToast("error", result.Message);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error creating user");
+            _createMessage = "Failed to create user. See logs for details.";
+            ShowToast("error", "Failed to create user");
+        }
+        finally
+        {
+            _isCreating = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ResetAllLoadStatuses()
+    {
+        _isResettingLoads = true;
+        _loadResetMessage = null;
+        _loadResetSuccess = false;
+        StateHasChanged();
+
+        try
+        {
+            // Get all loads that are not already "Available"
+            var loads = await DbContext.Loads
+                .Include(l => l.Bookings)
+                .Where(l => l.Status != "Available")
+                .ToListAsync();
+            
+            if (!loads.Any())
+            {
+                _loadResetMessage = "All loads are already set to 'Available' status.";
+                _loadResetSuccess = true;
+                return;
+            }
+
+            var bookingsToDelete = new List<t12Project.Models.Booking>();
+
+            // Reset all load statuses to "Available" and clear lifecycle fields
+            foreach (var load in loads)
+            {
+                load.Status = "Available";
+                
+                // Clear driver assignment
+                load.AssignedDriverId = null;
+                
+                // Clear all lifecycle timestamps
+                load.AcceptedAt = null;
+                load.PickedUpAt = null;
+                load.DeliveredAt = null;
+                load.CompletedAt = null;
+                
+                // Clear delivery tracking fields
+                load.EstimatedTimeOfArrivalMinutes = null;
+                load.DeliverySequence = null;
+                
+                // Collect bookings to delete
+                if (load.Bookings.Any())
+                {
+                    bookingsToDelete.AddRange(load.Bookings);
+                }
+            }
+
+            // Delete all associated bookings
+            if (bookingsToDelete.Any())
+            {
+                DbContext.Bookings.RemoveRange(bookingsToDelete);
+            }
+
+            await DbContext.SaveChangesAsync();
+            
+            var bookingCount = bookingsToDelete.Count;
+            _loadResetMessage = $"✓ Successfully reset {loads.Count} load(s) to 'Available' status and removed {bookingCount} booking(s).";
+            _loadResetSuccess = true;
+            ShowToast("success", $"Reset {loads.Count} loads");
+            
+            Logger.LogInformation("Admin reset {LoadCount} loads to Available status and removed {BookingCount} bookings", loads.Count, bookingCount);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error resetting load statuses");
+            _loadResetMessage = $"❌ Failed to reset load statuses: {ex.Message}";
+            _loadResetSuccess = false;
+            ShowToast("error", "Failed to reset loads");
+        }
+        finally
+        {
+            _isResettingLoads = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ChangeRoleAsync(AdminUserSummary user, string? newRole)
+    {
+        if (string.IsNullOrWhiteSpace(newRole))
+        {
+            return;
+        }
+
+        if (!Enum.TryParse<AccountRole>(newRole, out var parsedRole))
+        {
+            _tableMessage = "Unknown role.";
+            return;
+        }
+
+        var result = await AdminUserService.UpdateRoleAsync(user.Id, parsedRole);
+        _tableMessage = result.Message;
+        if (result.Succeeded)
+        {
+            await LoadUsersAsync();
+            ShowToast("success", "Role updated");
+        }
+        else
+        {
+            ShowToast("error", result.Message);
+        }
+    }
+
+    private async Task ToggleBlockAsync(AdminUserSummary user, bool shouldBlock)
+    {
+        _tableMessage = shouldBlock ? "Blocking user..." : "Unblocking user...";
+        StateHasChanged();
+        
+        var result = shouldBlock
+            ? await AdminUserService.BlockUserAsync(user.Id)
+            : await AdminUserService.UnblockUserAsync(user.Id);
+
+        _tableMessage = result.Message;
+        if (result.Succeeded)
+        {
+            await LoadUsersAsync();
+            ShowToast("success", result.Message);
+        }
+        else
+        {
+            ShowToast("error", result.Message);
+        }
+        StateHasChanged();
+    }
+
+    // prompt before delete to avoid accidental destructive actions
+    private bool _showDeleteConfirmModal;
+    private string? _confirmDeleteUserId;
+    private string? _confirmDeleteUserName;
+    private string? _currentUserId;
+
+    private Task PromptDelete(AdminUserSummary user)
+    {
+        _confirmDeleteUserId = user.Id;
+        _confirmDeleteUserName = user.Name;
+        _showDeleteConfirmModal = true;
+        _modalCleanup = () => JS.InvokeVoidAsync("modalUtils.trapFocus", "deleteModal").AsTask();
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private async Task ConfirmDeleteAsync()
+    {
+        if (string.IsNullOrEmpty(_confirmDeleteUserId)) return;
+
+        try
+        {
+            var result = await AdminUserService.DeleteUserAsync(_confirmDeleteUserId);
+            _tableMessage = result.Message;
+            if (result.Succeeded)
+            {
+                await LoadUsersAsync();
+                ShowToast("success", "User deleted");
+            }
+            else
+            {
+                ShowToast("error", result.Message);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error deleting user {UserId}", _confirmDeleteUserId);
+            _tableMessage = "Failed to delete user. See logs for details.";
+            ShowToast("error", "Failed to delete user");
+        }
+        finally
+        {
+            _showDeleteConfirmModal = false;
+            _confirmDeleteUserId = null;
+            _confirmDeleteUserName = null;
+            CleanupModal();
+            StateHasChanged();
+        }
+    }
+
+    private async Task GoToPage(int page)
+    {
+        if (page < 1) page = 1;
+        _page = page;
+        await LoadUsersAsync();
+    }
+
+    private void OpenEditModal(AdminUserSummary user)
+    {
+        _editingUserId = user.Id;
+        _editingUser = new EditUserModel
+        {
+            FullName = user.Name,
+            Email = user.Email,
+            Role = Enum.TryParse<AccountRole>(user.Role, out var role) ? role : AccountRole.Customer
+        };
+        _editUserContext = new EditContext(_editingUser);
+        _editMessage = null;
+        _editError = null;
+        _showEditModal = true;
+        _modalCleanup = () => JS.InvokeVoidAsync("modalUtils.trapFocus", "editModal").AsTask();
+        StateHasChanged();
+    }
+
+    private void CloseEditModal()
+    {
+        _showEditModal = false;
+        _editingUser = null;
+        _editingUserId = null;
+        _editMessage = null;
+        _editError = null;
+        CleanupModal();
+        StateHasChanged();
+    }
+
+    private async Task SaveUserAsync()
+    {
+        if (_editingUser is null || string.IsNullOrEmpty(_editingUserId)) return;
+
+        _isSaving = true;
+        _editMessage = null;
+        _editError = null;
+        StateHasChanged();
+
+        try
+        {
+            // Update user details
+            var updateResult = await AdminUserService.UpdateUserAsync(_editingUserId, _editingUser.FullName, _editingUser.Email);
+            if (!updateResult.Succeeded)
+            {
+                _editError = updateResult.Message;
+                _isSaving = false;
+                StateHasChanged();
+                return;
+            }
+
+            // Update role if changed
+            var currentUser = _users?.FirstOrDefault(u => u.Id == _editingUserId);
+            if (currentUser is not null && currentUser.Role != _editingUser.Role.ToString())
+            {
+                var roleResult = await AdminUserService.UpdateRoleAsync(_editingUserId, _editingUser.Role);
+                if (!roleResult.Succeeded)
+                {
+                    _editError = roleResult.Message;
+                    _isSaving = false;
+                    StateHasChanged();
+                    return;
+                }
+            }
+
+            _editMessage = "User updated successfully!";
+            await LoadUsersAsync();
+            
+            // Close modal after a brief delay
+            await Task.Delay(1000);
+            CloseEditModal();
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private void ShowToast(string kind, string message)
+    {
+        _toasts.Enqueue((kind, message));
+        _ = DismissToastAfterDelay();
+        StateHasChanged();
+    }
+
+    private async Task DismissToastAfterDelay()
+    {
+        await Task.Delay(ToastDurationMs);
+        if (_toasts.Count > 0)
+        {
+            _toasts.Dequeue();
+            StateHasChanged();
+        }
+    }
+
+    private void HandleModalKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            if (_showEditModal)
+            {
+                CloseEditModal();
+            }
+            if (_showDeleteConfirmModal)
+            {
+                _showDeleteConfirmModal = false;
+                CleanupModal();
+                StateHasChanged();
+            }
+        }
+    }
+
+    private void CleanupModal()
+    {
+        try
+        {
+            _modalCleanup = null;
+        }
+        catch { }
+    }
+
+    public void Dispose()
+    {
+        // nothing disposable yet; placeholder for future JS interop cleanup
+    }
+
+    private sealed class AdminCreateUserModel
+    {
+        [Required]
+        [StringLength(80)]
+        public string FullName { get; set; } = string.Empty;
+
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
+
+        [Required]
+        [MinLength(8)]
+        public string Password { get; set; } = string.Empty;
+
+        [Required]
+        public AccountRole Role { get; set; } = AccountRole.Customer;
+
+        public void Reset()
+        {
+            FullName = string.Empty;
+            Email = string.Empty;
+            Password = string.Empty;
+            Role = AccountRole.Customer;
+        }
+    }
+
+    private sealed class EditUserModel
+    {
+        [Required]
+        [StringLength(80)]
+        public string FullName { get; set; } = string.Empty;
+
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
+
+        [Required]
+        public AccountRole Role { get; set; } = AccountRole.Customer;
+    }
+}

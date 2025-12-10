@@ -1,0 +1,193 @@
+﻿@page "/"
+@using System.Security.Claims
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+
+<PageTitle>LoadHitch - Connect Drivers with Loads Instantly</PageTitle>
+
+<main class="min-h-screen bg-white">
+	<!-- Hero Section -->
+	<section class="py-12 lg:py-16">
+		<div class="max-w-7xl mx-auto px-6 lg:px-12">
+			<div class="flex flex-col lg:flex-row lg:items-center lg:gap-8">
+				<!-- Left Content -->
+				<div class="lg:w-[45%] lg:pr-4">
+					<h1 class="text-4xl md:text-[2.75rem] font-bold leading-[1.2] text-slate-900">
+						Connect Drivers with Loads Instantly
+					</h1>
+					<p class="mt-5 text-slate-600 leading-relaxed">
+						LoadHitch revolutionizes freight transportation by connecting truck drivers with shipping opportunities in real-time. Save time, reduce empty miles, and maximize efficiency for both drivers and shippers.
+					</p>
+					
+					<!-- CTA Buttons -->
+					<div class="mt-8 flex flex-wrap items-center gap-3">
+						<a href="/register?role=driver" class="inline-flex items-center justify-center rounded-full bg-teal-500 px-6 py-3 text-white font-medium hover:bg-teal-600 transition-colors">
+							I'm a Driver
+						</a>
+						<a href="/register?role=customer" class="inline-flex items-center justify-center rounded-full border-2 border-teal-500 px-6 py-3 text-teal-600 font-medium hover:bg-teal-50 transition-colors">
+							I Need Transport
+						</a>
+					</div>
+				</div>
+				
+				<!-- Right Image - Truck -->
+				<div class="lg:w-[55%] mt-10 lg:mt-0">
+					<div class="rounded-2xl overflow-hidden">
+						<img src="/images/gabriel-santos-GBVDilE8yvI-unsplash.jpg" alt="Truck on the road" class="w-full h-auto object-cover" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+	
+	<!-- Features Section -->
+	<section id="features" class="bg-slate-50 py-20">
+		<div class="max-w-7xl mx-auto px-6 lg:px-12">
+			<div class="text-center max-w-3xl mx-auto mb-16">
+				<h2 class="text-3xl md:text-4xl font-bold text-slate-900">Why Choose LoadHitch?</h2>
+				<p class="mt-4 text-lg text-slate-600">Our platform offers powerful features designed to streamline freight transportation.</p>
+			</div>
+			
+			<div class="grid gap-8 md:grid-cols-3">
+				<div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100 hover:shadow-lg transition-shadow">
+					<div class="w-14 h-14 rounded-xl bg-teal-100 flex items-center justify-center mb-6">
+						<svg class="w-7 h-7 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+						</svg>
+					</div>
+					<h3 class="text-xl font-bold text-slate-900">Real-Time Matching</h3>
+					<p class="mt-3 text-slate-600">Instantly connect with available loads or drivers based on location, equipment, and preferences.</p>
+				</div>
+				
+				<div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100 hover:shadow-lg transition-shadow">
+					<div class="w-14 h-14 rounded-xl bg-teal-100 flex items-center justify-center mb-6">
+						<svg class="w-7 h-7 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+						</svg>
+					</div>
+					<h3 class="text-xl font-bold text-slate-900">Verified Network</h3>
+					<p class="mt-3 text-slate-600">All drivers and shippers are verified for safety and reliability. Trust your freight with confidence.</p>
+				</div>
+				
+				<div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100 hover:shadow-lg transition-shadow">
+					<div class="w-14 h-14 rounded-xl bg-teal-100 flex items-center justify-center mb-6">
+						<svg class="w-7 h-7 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+						</svg>
+					</div>
+					<h3 class="text-xl font-bold text-slate-900">Live Tracking</h3>
+					<p class="mt-3 text-slate-600">Track shipments in real-time with GPS updates. Know exactly where your freight is at all times.</p>
+				</div>
+			</div>
+		</div>
+	</section>
+	
+	<!-- How It Works Section -->
+	<section id="how-it-works" class="py-20">
+		<div class="max-w-7xl mx-auto px-6 lg:px-12">
+			<div class="text-center max-w-3xl mx-auto mb-16">
+				<h2 class="text-3xl md:text-4xl font-bold text-slate-900">How It Works</h2>
+				<p class="mt-4 text-lg text-slate-600">Get started in three simple steps.</p>
+			</div>
+			
+			<div class="grid gap-8 md:grid-cols-3">
+				<div class="text-center">
+					<div class="w-16 h-16 rounded-full bg-teal-500 text-white text-2xl font-bold flex items-center justify-center mx-auto mb-6">1</div>
+					<h3 class="text-xl font-bold text-slate-900">Create Account</h3>
+					<p class="mt-3 text-slate-600">Sign up as a driver or shipper. Complete your profile with all necessary details.</p>
+				</div>
+				
+				<div class="text-center">
+					<div class="w-16 h-16 rounded-full bg-teal-500 text-white text-2xl font-bold flex items-center justify-center mx-auto mb-6">2</div>
+					<h3 class="text-xl font-bold text-slate-900">Post or Search</h3>
+					<p class="mt-3 text-slate-600">Drivers can browse loads. Shippers post their shipping needs with details.</p>
+				</div>
+				
+				<div class="text-center">
+					<div class="w-16 h-16 rounded-full bg-teal-500 text-white text-2xl font-bold flex items-center justify-center mx-auto mb-6">3</div>
+					<h3 class="text-xl font-bold text-slate-900">Connect & Ship</h3>
+					<p class="mt-3 text-slate-600">Match, confirm, and start shipping. Track everything from pickup to delivery.</p>
+				</div>
+			</div>
+		</div>
+	</section>
+	
+	<!-- Benefits Section -->
+	<section id="benefits" class="bg-slate-50 py-20">
+		<div class="max-w-7xl mx-auto px-6 lg:px-12">
+			<div class="text-center max-w-3xl mx-auto mb-16">
+				<h2 class="text-3xl md:text-4xl font-bold text-slate-900">Benefits for Everyone</h2>
+				<p class="mt-4 text-lg text-slate-600">Whether you're a driver or shipper, LoadHitch has you covered.</p>
+			</div>
+			
+			<div class="grid gap-8 md:grid-cols-2">
+				<div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
+					<h3 class="text-xl font-bold text-teal-600 mb-4">For Drivers</h3>
+					<ul class="space-y-3 text-slate-600">
+						<li class="flex items-start gap-3">
+							<svg class="w-5 h-5 text-teal-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+							<span>Find loads that match your route and preferences</span>
+						</li>
+						<li class="flex items-start gap-3">
+							<svg class="w-5 h-5 text-teal-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+							<span>Reduce empty miles and maximize earnings</span>
+						</li>
+						<li class="flex items-start gap-3">
+							<svg class="w-5 h-5 text-teal-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+							<span>Get paid quickly with secure transactions</span>
+						</li>
+					</ul>
+				</div>
+				
+				<div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
+					<h3 class="text-xl font-bold text-teal-600 mb-4">For Shippers</h3>
+					<ul class="space-y-3 text-slate-600">
+						<li class="flex items-start gap-3">
+							<svg class="w-5 h-5 text-teal-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+							<span>Access a network of verified, reliable drivers</span>
+						</li>
+						<li class="flex items-start gap-3">
+							<svg class="w-5 h-5 text-teal-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+							<span>Track shipments in real-time from pickup to delivery</span>
+						</li>
+						<li class="flex items-start gap-3">
+							<svg class="w-5 h-5 text-teal-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+							<span>Competitive rates with transparent pricing</span>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</section>
+	
+	<!-- CTA Section -->
+	<section class="bg-teal-600 py-16">
+		<div class="max-w-4xl mx-auto px-6 text-center">
+			<h2 class="text-3xl md:text-4xl font-bold text-white">Ready to Get Started?</h2>
+			<p class="mt-4 text-lg text-teal-100">Join thousands of drivers and shippers already using LoadHitch.</p>
+			<div class="mt-8 flex flex-wrap justify-center gap-4">
+				<a href="/register" class="inline-flex items-center justify-center rounded-full bg-white px-8 py-4 text-teal-600 font-semibold shadow-lg hover:bg-teal-50 transition-colors">
+					Create Free Account
+				</a>
+				<a href="/login" class="inline-flex items-center justify-center rounded-full border-2 border-white px-8 py-4 text-white font-semibold hover:bg-teal-700 transition-colors">
+					Sign In
+				</a>
+			</div>
+		</div>
+	</section>
+</main>
+
+@code {
+	protected override async Task OnInitializedAsync()
+	{
+		var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+		var user = authState.User;
+
+		if (user.Identity?.IsAuthenticated == true)
+		{
+			// Redirect authenticated users to their dashboard
+			Navigation.NavigateTo("/dashboard", forceLoad: true);
+		}
+	}
+}

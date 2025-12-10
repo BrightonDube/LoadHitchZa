@@ -1,0 +1,311 @@
+@page "/register"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@implements IAsyncDisposable
+@inject AuthClient AuthClient
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@inject ILogger<Register> Logger
+
+<PageTitle>Create account - LoadHitch</PageTitle>
+
+<section class="min-h-screen bg-slate-50 py-16">
+    <div class="mx-auto max-w-md px-6">
+        <!-- Logo -->
+        <div class="text-center mb-8">
+            <a href="/" class="text-3xl font-serif italic text-teal-500">LoadHitch</a>
+        </div>
+        
+        <!-- Register Card -->
+        <div class="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+            <div class="text-center mb-6">
+                <h1 class="text-2xl font-bold text-slate-900">Create your account</h1>
+                <p class="mt-2 text-slate-600">Start connecting with loads instantly</p>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(_banner))
+            {
+                <div class="mb-4 rounded-xl bg-teal-50 border border-teal-200 px-4 py-3 text-sm text-teal-700">@_banner</div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(_error))
+            {
+                <div class="mb-4 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">@_error</div>
+            }
+
+            <EditForm EditContext="_editContext" OnValidSubmit="HandleRegistrationAsync">
+                <DataAnnotationsValidator />
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Full name</label>
+                        <InputText class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:outline-none" placeholder="John Doe" @bind-Value="_model.FullName" />
+                        <ValidationMessage For="@(() => _model.FullName)" class="mt-1 text-xs text-red-600" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Email address</label>
+                        <InputText type="email" class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:outline-none" placeholder="you@company.com" @bind-Value="_model.Email" />
+                        <ValidationMessage For="@(() => _model.Email)" class="mt-1 text-xs text-red-600" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Password</label>
+                        <InputText type="password" class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:outline-none" placeholder="Create a password" @bind-Value="_model.Password" />
+                        <ValidationMessage For="@(() => _model.Password)" class="mt-1 text-xs text-red-600" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Confirm password</label>
+                        <InputText type="password" class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:outline-none" placeholder="Confirm your password" @bind-Value="_model.ConfirmPassword" />
+                        <ValidationMessage For="@(() => _model.ConfirmPassword)" class="mt-1 text-xs text-red-600" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">I am a</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button type="button" 
+                                    @onclick="() => _model.SelectedRole = AccountRole.Driver"
+                                    class="rounded-xl border-2 px-4 py-3 text-sm font-medium transition-all @(_model.SelectedRole == AccountRole.Driver ? "border-teal-500 bg-teal-50 text-teal-700" : "border-slate-200 text-slate-600 hover:border-slate-300")">
+                                <div class="flex items-center justify-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                                    </svg>
+                                    <span>Driver</span>
+                                </div>
+                            </button>
+                            <button type="button" 
+                                    @onclick="() => _model.SelectedRole = AccountRole.Customer"
+                                    class="rounded-xl border-2 px-4 py-3 text-sm font-medium transition-all @(_model.SelectedRole == AccountRole.Customer ? "border-teal-500 bg-teal-50 text-teal-700" : "border-slate-200 text-slate-600 hover:border-slate-300")">
+                                <div class="flex items-center justify-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                    </svg>
+                                    <span>Customer</span>
+                                </div>
+                            </button>
+                        </div>
+                        <ValidationMessage For="@(() => _model.SelectedRole)" class="mt-1 text-xs text-red-600" />
+                    </div>
+                </div>
+
+                <button type="submit" class="mt-6 w-full rounded-full bg-teal-500 px-6 py-3 text-base font-medium text-white transition hover:bg-teal-600 disabled:bg-slate-300 disabled:cursor-not-allowed" disabled="@_isSubmitting">
+                    @(_isSubmitting ? "Creating account..." : "Create account")
+                </button>
+            </EditForm>
+
+            <div class="mt-6 flex items-center gap-4 text-xs uppercase tracking-wider text-slate-400">
+                <span class="h-px flex-1 bg-slate-200" />
+                or
+                <span class="h-px flex-1 bg-slate-200" />
+            </div>
+
+            <button class="mt-4 flex w-full items-center justify-center gap-3 rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:bg-slate-100 disabled:cursor-not-allowed" @onclick="StartGoogleSignInAsync" disabled="@_isSubmitting">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="h-5 w-5" />
+                Continue with Google
+            </button>
+
+            <p class="mt-6 text-center text-sm text-slate-600">
+                Already have an account?
+                <a class="font-medium text-teal-600 hover:text-teal-500" href="/login">Sign in</a>
+            </p>
+        </div>
+    </div>
+</section>
+
+@code {
+    private readonly RegistrationModel _model = new();
+    private EditContext? _editContext;
+    private readonly AccountRole[] _allowedRoles = [AccountRole.Customer, AccountRole.Driver];
+    private bool _isSubmitting;
+    private string? _error;
+    private string? _banner;
+    private DotNetObjectReference<Register>? _jsRef;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Logger.LogInformation("Register page initialized");
+        _editContext = new EditContext(_model);
+        
+        // Redirect if already logged in
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated == true)
+        {
+            Navigation.NavigateTo("/dashboard", forceLoad: true);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _jsRef = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("loadhitchAuth.registerHandler", _jsRef);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_jsRef is not null)
+        {
+            try
+            {
+                await JS.InvokeVoidAsync("loadhitchAuth.unregisterHandler", _jsRef);
+            }
+            catch { }
+            _jsRef.Dispose();
+        }
+    }
+
+    private async Task HandleRegistrationAsync()
+    {
+        _error = null;
+        _banner = null;
+        Logger.LogInformation("Registration form submitted for {Email}", _model.Email);
+
+        if (_model.Password != _model.ConfirmPassword)
+        {
+            _error = "Passwords do not match.";
+            Logger.LogWarning("Password mismatch for {Email}", _model.Email);
+            return;
+        }
+
+        _isSubmitting = true;
+        StateHasChanged();
+
+        try
+        {
+            var request = new RegisterRequest
+            {
+                FullName = _model.FullName,
+                Email = _model.Email,
+                Password = _model.Password,
+                ConfirmPassword = _model.ConfirmPassword,
+                Role = _model.SelectedRole
+            };
+
+            Logger.LogInformation("Calling AuthClient.RegisterAsync for {Email}", _model.Email);
+            var response = await AuthClient.RegisterAsync(request);
+            Logger.LogInformation("AuthClient.RegisterAsync returned: Succeeded={Succeeded}, Message={Message}", response.Succeeded, response.Message);
+
+            if (!response.Succeeded || response.Payload is null)
+            {
+                _error = string.IsNullOrWhiteSpace(response.Message) ? "Registration failed. Please try again." : response.Message;
+                Logger.LogWarning("Registration failed for {Email}: {Error}", _model.Email, _error);
+                return;
+            }
+
+            _banner = $"Account created for {response.Payload.FullName}. Redirecting...";
+            Logger.LogInformation("Registration successful for {Email}, completing sign-in", _model.Email);
+            StateHasChanged();
+            await Task.Delay(500);
+            
+            // Redirect to complete sign-in endpoint which sets the cookie properly
+            var returnUrl = Uri.EscapeDataString(response.Payload.DashboardUrl);
+            Navigation.NavigateTo($"/auth/complete-signin?email={Uri.EscapeDataString(response.Payload.Email)}&returnUrl={returnUrl}", forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            _error = "An unexpected error occurred. Please try again.";
+            Logger.LogError(ex, "Exception during registration for {Email}", _model.Email);
+        }
+        finally
+        {
+            _isSubmitting = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task StartGoogleSignInAsync()
+    {
+        Logger.LogInformation("Starting Google Sign-In");
+        _error = null;
+        _banner = null;
+        _isSubmitting = true;
+        StateHasChanged();
+
+        try
+        {
+            var state = Guid.NewGuid().ToString("N");
+            var googleUrl = $"{Navigation.BaseUri}api/auth/google/signin?state={state}";
+            await JS.InvokeVoidAsync("loadhitchAuth.startGoogleSignIn", googleUrl);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to start Google sign-in");
+            _error = "Failed to start Google sign-in. Please try again.";
+        }
+        finally
+        {
+            _isSubmitting = false;
+            StateHasChanged();
+        }
+    }
+
+    [JSInvokable]
+    public async Task HandleExternalAuthMessage(string json)
+    {
+        try
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(json);
+            var root = doc.RootElement;
+
+            // Only process LoadHitch auth messages, ignore browser extension messages
+            if (!root.TryGetProperty("type", out var typeProp))
+                return;
+            
+            var messageType = typeProp.GetString();
+            if (messageType != "loadhitch:auth" && messageType != "loadhitch:auth-error")
+                return;
+
+            Logger.LogInformation("Received auth message: {Type}", messageType);
+
+            // Check for error in payload (auth-error message)
+            if (root.TryGetProperty("payload", out var payload))
+            {
+                if (payload.TryGetProperty("error", out var errorProp))
+                {
+                    _error = errorProp.GetString() ?? "Google sign-in failed.";
+                    StateHasChanged();
+                    return;
+                }
+
+                // Success - get dashboardUrl from payload (camelCase from JSON serializer)
+                if (payload.TryGetProperty("dashboardUrl", out var dashboardProp))
+                {
+                    var dashboardUrl = dashboardProp.GetString() ?? "/dashboard";
+                    _banner = "Signed in with Google! Redirecting...";
+                    StateHasChanged();
+                    await Task.Delay(500);
+                    Navigation.NavigateTo(dashboardUrl, forceLoad: true);
+                    return;
+                }
+            }
+
+            Logger.LogWarning("No dashboardUrl found in auth message");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to parse auth message");
+            _error = "Failed to complete Google sign-in.";
+            StateHasChanged();
+        }
+    }
+
+    private sealed class RegistrationModel
+    {
+        [Required]
+        [StringLength(80)]
+        public string FullName { get; set; } = string.Empty;
+
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
+
+        [Required]
+        [MinLength(8)]
+        public string Password { get; set; } = string.Empty;
+
+        [Required]
+        [Compare(nameof(Password), ErrorMessage = "Passwords must match.")]
+        public string ConfirmPassword { get; set; } = string.Empty;
+
+        [Required]
+        public AccountRole SelectedRole { get; set; } = AccountRole.Customer;
+    }
+}

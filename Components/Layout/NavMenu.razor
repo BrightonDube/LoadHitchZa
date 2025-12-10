@@ -1,0 +1,42 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+
+<nav class="mx-auto flex max-w-7xl flex-col gap-4 px-6 lg:px-12 py-5 text-sm sm:flex-row sm:items-center sm:justify-between bg-white">
+	<!-- Logo -->
+	<div class="flex items-center">
+		<NavLink href="/" Match="NavLinkMatch.All">
+			<span class="text-2xl font-serif italic text-teal-500">LoadHitch</span>
+		</NavLink>
+	</div>
+	
+	<!-- Navigation Links -->
+	<div class="flex flex-wrap items-center gap-8 text-slate-700">
+		<AuthorizeView>
+			<Authorized>
+				<a href="/dashboard" class="hover:text-teal-500 transition-colors font-medium text-teal-600">Dashboard</a>
+				<a href="/account/profile" class="hover:text-teal-500 transition-colors">My Profile</a>
+			</Authorized>
+			<NotAuthorized>
+				<a class="hover:text-teal-500 transition-colors" href="/#features">Features</a>
+				<a class="hover:text-teal-500 transition-colors" href="/#how-it-works">How It Works</a>
+				<a class="hover:text-teal-500 transition-colors" href="/#benefits">Benefits</a>
+				<a href="/login" class="hover:text-teal-500 transition-colors">Sign In</a>
+			</NotAuthorized>
+		</AuthorizeView>
+	</div>
+	
+	<!-- CTA Button -->
+	<div class="flex items-center">
+		<AuthorizeView>
+			<Authorized>
+				<a href="/api/auth/signout" class="rounded-full bg-teal-500 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-teal-600">
+					Sign Out
+				</a>
+			</Authorized>
+			<NotAuthorized>
+				<a href="/register" class="rounded-full bg-teal-500 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-teal-600">
+					Get Started
+				</a>
+			</NotAuthorized>
+		</AuthorizeView>
+	</div>
+</nav>
