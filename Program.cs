@@ -16,6 +16,8 @@ using t12Project.Models;
 using t12Project.Options;
 using t12Project.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.ResponseCompression;
+using System.IO.Compression;
 
 
 if (File.Exists(Path.Combine(AppContext.BaseDirectory, ".env")))
@@ -155,8 +157,49 @@ builder.Services.AddScoped<RealtimeNotificationService>();
 builder.Services.AddScoped<LocationTrackingService>();
 builder.Services.AddScoped<LoadLifecycleService>();
 
-// Add SignalR for real-time tracking
-builder.Services.AddSignalR();
+// Add SignalR for real-time tracking with production optimizations
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = builder.Environment.IsDevelopment();
+    options.MaximumReceiveMessageSize = 32 * 1024; // 32KB
+    options.StreamBufferCapacity = 10;
+    options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
+    options.HandshakeTimeout = TimeSpan.FromSeconds(15);
+});
+
+// Add response compression for better performance
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<BrotliCompressionProvider>();
+    options.Providers.Add<GzipCompressionProvider>();
+    options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[]
+    {
+        "application/json",
+        "application/javascript",
+        "text/css",
+        "text/html",
+        "text/json",
+        "text/plain"
+    });
+});
+
+builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
+{
+    options.Level = CompressionLevel.Fastest;
+});
+
+builder.Services.Configure<GzipCompressionProviderOptions>(options =>
+{
+    options.Level = CompressionLevel.Optimal;
+});
+
+// Add response caching
+builder.Services.AddResponseCaching();
+
+// Add health checks
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<ApplicationDbContext>("database");
 
 var app = builder.Build();
 
@@ -167,14 +210,40 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
+
+    // Add security headers for production
+    app.Use(async (context, next) =>
+    {
+        context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+        context.Response.Headers.Append("X-Frame-Options", "DENY");
+        context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
+        context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
+        context.Response.Headers.Append("Permissions-Policy", "geolocation=(self), camera=(), microphone=()");
+        await next();
+    });
 }
-else
-{
-}
+
+// Enable response compression
+app.UseResponseCompression();
 
 app.UseHttpsRedirection();
 
-app.UseStaticFiles();
+// Enable response caching
+app.UseResponseCaching();
+
+// Static files with caching
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        // Cache static files for 30 days in production
+        if (!app.Environment.IsDevelopment())
+        {
+            ctx.Context.Response.Headers.Append("Cache-Control", "public,max-age=2592000");
+        }
+    }
+});
+
 app.UseAntiforgery();
 
 app.UseAuthentication();
@@ -183,6 +252,9 @@ app.UseAuthorization();
 
 // Map SignalR hub
 app.MapHub<t12Project.Hubs.LoadTrackingHub>("/hubs/loadtracking");
+
+// Map health check endpoint
+app.MapHealthChecks("/health");
 
 app.MapControllers();
 app.MapRazorComponents<App>()
