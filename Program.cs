@@ -210,7 +210,7 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
-    
+
     // Add security headers for production
     app.Use(async (context, next) =>
     {
