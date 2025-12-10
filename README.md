@@ -1,230 +1,375 @@
 # LoadHitch
 
-A Blazor-based web application designed to efficiently connect shippers with available truck drivers. This project was developed as the final group project for the CSE325 course.
+**Modern Logistics Marketplace Platform**
 
-**[► View the Live Deployed Application on Azure](https://loadhitch.azurewebsites.net)**
+A comprehensive web application that connects shippers with independent truck drivers, streamlining the freight matching process and maximizing operational efficiency.
 
+**[► View Live Application](https://loadhitch.azurewebsites.net)**
+
+---
 
 ## Table of Contents
-1. [Project Overview](#project-overview)
-2. [Core Features](#core-features)
+1. [Overview](#overview)
+2. [Key Features](#key-features)
 3. [Technology Stack](#technology-stack)
-4. [Getting Started (Local Setup)](#getting-started-local-setup)
-5. [Usage](#usage)
-6. [Contributors](#contributors)
-7. [License](#license)
+4. [Getting Started](#getting-started)
+5. [Deployment](#deployment)
+6. [Testing](#testing)
+7. [Demo Credentials](#demo-credentials)
+8. [License](#license)
 
-## Project Overview
+---
 
-LoadHitch is a streamlined logistics platform that addresses the challenge of connecting businesses that need to ship goods with independent truck drivers looking for loads. The application features two distinct dashboards: a "Loads Dashboard" where customers can post shipping jobs, and a "Trucks Dashboard" where drivers can post their availability and routes. This creates a transparent and efficient marketplace, reducing the friction for businesses to find transport and helping drivers maximize their profitability by minimizing wasted trips.
+## Overview
 
-## Core Features
+LoadHitch is an enterprise-grade logistics platform designed to solve the inefficiencies in the freight industry. By providing a transparent marketplace where shippers can post loads and drivers can showcase their availability, LoadHitch eliminates empty miles and reduces operational costs for all stakeholders.
 
--   ✅ **Role-Based Authentication:** Secure user registration and login for three distinct roles: **Customer**, **Driver**, and **Admin**.
--   ✅ **Google OAuth Integration:** Users can sign up or log in using their Google accounts for convenience.
--   ✅ **Loads Dashboard:** Full CRUD (Create, Read, Update, Delete) functionality for customers to post and manage their shipping jobs.
--   ✅ **Trucks Dashboard:** Full CRUD functionality for drivers to post and manage their availability, location, and routes.
--   ✅ **Booking System:** A simple, status-based system for drivers to "Claim" jobs and for customers to "Book" trucks.
--   ✅ **Fully Responsive UI:** The application is designed to be fully functional and user-friendly across desktop, tablet, and mobile devices.
+### Business Value
+
+- **For Shippers:** Instant access to a network of verified drivers with real-time availability
+- **For Drivers:** Maximize revenue by minimizing deadhead miles and finding optimal routes
+- **For Logistics Managers:** Centralized dashboard for monitoring all shipments and fleet operations
+
+## Key Features
+
+### Authentication & Security
+-   🔐 **Multi-Role Authentication:** Secure registration and login for Customers, Drivers, and Administrators
+-   🔑 **OAuth 2.0 Integration:** Streamlined Google Sign-In for enhanced user convenience
+-   🛡️ **JWT Token-Based Security:** Industry-standard authentication with refresh token support
+
+### Core Functionality
+-   📦 **Load Management:** Complete CRUD operations for shippers to post, edit, and manage freight listings
+-   🚛 **Fleet Management:** Driver dashboard for managing truck availability, routes, and schedules
+-   🤝 **Smart Booking System:** Automated matching and booking workflow between loads and trucks
+-   🗺️ **Interactive Mapping:** Real-time location tracking and route visualization with Mapbox integration
+-   📊 **Analytics Dashboard:** Comprehensive metrics and reporting for administrators
+
+### Platform Capabilities
+-   📱 **Fully Responsive Design:** Optimized experience across desktop, tablet, and mobile devices
+-   ⚡ **Real-Time Updates:** Live status changes and notifications using Blazor Server
+-   🌍 **Geographic Optimization:** Location-based load matching for Cape Town and surrounding areas
+-   📧 **Automated Notifications:** Email alerts for booking confirmations and status updates
 
 ## Technology Stack
 
--   **Frontend:** .NET Blazor Server
--   **Backend:** ASP.NET Core
--   **Database:** PostgreSQL
--   **ORM:** Entity Framework Core
--   **Authentication:** ASP.NET Core Identity, Google OAuth 2.0
--   **Deployment & CI/CD:** Microsoft Azure (App Service, Azure DB for PostgreSQL) & GitHub Actions
--   **Testing:** xUnit (Unit Tests), bUnit (Component Tests), Playwright (End-to-End Tests)
+### Frontend
+-   **Framework:** .NET 8 Blazor Server
+-   **UI Components:** Bootstrap 5, Blazor Component Library
+-   **Mapping:** Mapbox GL JS
+-   **Real-time Communication:** SignalR
 
-### End-to-End (Playwright)
+### Backend
+-   **Runtime:** ASP.NET Core 8.0
+-   **API Architecture:** RESTful APIs with MVC Controllers
+-   **Authentication:** ASP.NET Core Identity + OAuth 2.0
+-   **Authorization:** Role-based access control (RBAC)
 
-Playwright is used for end-to-end testing. The repository includes a helper script (`scripts/run-e2e.ps1`) that starts the app (unless you pass `-NoStart`), waits for readiness, runs the Playwright tests, collects artifacts (traces, screenshots, page HTML, videos) and stops the app.
+### Database & ORM
+-   **Database:** PostgreSQL 14+ (Azure Database for PostgreSQL)
+-   **ORM:** Entity Framework Core 8.0
+-   **Migrations:** Code-first with EF Core Migrations
 
-Install browsers (two approaches):
+### DevOps & Deployment
+-   **Cloud Platform:** Microsoft Azure
+-   **Hosting:** Azure App Service (Linux)
+-   **CI/CD:** GitHub Actions
+-   **Monitoring:** Azure Application Insights
 
-- Quick / machine-wide (one-time):
+### Quality Assurance
+-   **Unit Testing:** xUnit
+-   **Component Testing:** bUnit
+-   **E2E Testing:** Playwright
+-   **Code Coverage:** Coverlet
 
-    ```powershell
-    dotnet tool install --global Microsoft.Playwright.CLI
-    playwright install
-    ```
+---
 
-- Repo-local (recommended for CI reproducibility):
+## Testing
 
-    ```powershell
-    cd t12Project.Playwright
-    dotnet new tool-manifest # if you don't already have one
-    dotnet tool install Microsoft.Playwright.CLI
-    dotnet tool restore
-    dotnet tool run playwright install
-    ```
+### Comprehensive Test Suite
 
-Run the helper from the repo root (PowerShell):
+LoadHitch includes a robust testing framework covering unit, integration, and end-to-end scenarios.
+
+### Unit & Integration Tests
+
+Run all tests with the unified test runner:
 
 ```powershell
-.\scripts\run-e2e.ps1        # starts server, runs tests, collects artifacts
-.\scripts\run-e2e.ps1 -NoStart  # use an already-running server
+# Run all tests (unit + integration)
+.\scripts\run-tests.ps1 -All
+
+# Run only unit tests
+.\scripts\run-tests.ps1 -Unit
+
+# Run only integration tests
+.\scripts\run-tests.ps1 -Integration
+```
+
+### End-to-End Testing with Playwright
+
+**Initial Setup:**
+
+```powershell
+cd t12Project.Playwright
+dotnet tool restore
+dotnet tool run playwright install
+```
+
+**Run E2E Tests:**
+
+```powershell
+# Start app and run tests
+.\scripts\run-e2e.ps1
+
+# Use existing running app
+.\scripts\run-e2e.ps1 -NoStart
+
+# Custom configuration
 .\scripts\run-e2e.ps1 -BaseUrl 'https://localhost:7218' -InstallBrowsers
 ```
 
-Artifacts produced by the helper
+### Test Artifacts & Debugging
 
-- `./artifacts/e2e-test-results.trx` — NUnit/TRX test results
-- `./artifacts/e2e-report.html` — TRX → HTML conversion (helper will attempt to produce this)
-- `./artifacts/test-output.log` — combined test output and helper logs
-- `./artifacts/playwright/` — Playwright artifacts: `trace-*.zip`, screenshots, `page-*.html`, and `.webm` videos
-- On failure the helper creates a triage bundle: `./artifacts/triage-YYYYMMDD-HHMMSS.zip` containing a short `summary.txt`, a server log snippet around the failing test, the TRX and related Playwright artifacts for quick sharing
+Test runs generate comprehensive artifacts in `./artifacts/`:
 
-Debug tip — Playwright trace viewer
+- **Test Results:** `unit-tests.trx`, `e2e-test-results.trx`
+- **Logs:** `unit-tests.log`, `test-output.log`
+- **Playwright Traces:** Interactive debugging with `playwright show-trace ./artifacts/playwright/trace-*.zip`
+- **Screenshots & Videos:** Visual regression testing artifacts
+- **Triage Bundles:** Automatic failure investigation packages (`triage-YYYYMMDD-HHMMSS.zip`)
 
-The Playwright trace `.zip` is the most useful interactive artifact (it contains DOM snapshots, network and console). Open it with the Playwright trace viewer:
+### Coverage Reports
 
-```powershell
-playwright show-trace .\artifacts\playwright\trace-*.zip
-# or if running from the repo-local tool manifest:
-dotnet tool run playwright show-trace .\artifacts\playwright\trace-*.zip
+Generate code coverage reports:
+
+```bash
+dotnet test --collect:"XPlat Code Coverage"
 ```
 
-## Running tests (unit & integration)
+---
 
-A small helper script is provided to run unit tests and integration (Playwright) tests and collect artifacts in `./artifacts/`.
 
-- `scripts/run-tests.ps1` — unified test runner. It will run unit tests, integration tests (via the existing `scripts/run-e2e.ps1` helper), or both.
 
-Usage examples (PowerShell):
+## Deployment
+
+### Automated Deployment to Azure
+
+The repository includes a PowerShell deployment script for streamlined Azure deployment:
 
 ```powershell
-# Run unit tests only
-.\scripts\run-tests.ps1 -Unit
-
-# Run integration (E2E) tests only — the helper will start the app, run Playwright tests, and collect artifacts
-.\scripts\run-tests.ps1 -Integration
-
-# Run both unit and integration tests (default)
-.\scripts\run-tests.ps1 -All
-
-# If you already started the web app yourself, skip starting it by passing -NoStart
-.\scripts\run-tests.ps1 -Integration -NoStart
+.\deploy.ps1
 ```
 
-Artifacts produced by the helper
+The script handles:
+- ✅ Azure CLI authentication verification
+- ✅ Application build and publish (Release configuration)
+- ✅ Artifact cleanup and optimization
+- ✅ Zip package creation
+- ✅ Azure Web App deployment
+- ✅ Application restart and health check
 
-- `./artifacts/unit-tests.trx` and `./artifacts/unit-tests.log` — unit test TRX and console log
-- `./artifacts/e2e-test-results.trx` and `./artifacts/test-output.log` — integration test TRX and combined helper logs
-- `./artifacts/playwright/` — Playwright artifacts (trace zips, screenshots, page HTML, videos)
-- `./artifacts/triage-YYYYMMDD-HHMMSS.zip` — triage bundle created when a failing integration test run is detected
+### Manual Deployment Steps
 
-CI tip
+1. **Build and publish:**
+   ```bash
+   dotnet publish -c Release -o ./publish
+   ```
 
-Add the `scripts/run-tests.ps1` invocation to your CI job and upload `./artifacts/` when a job fails so you can inspect TRX, Playwright traces and screenshots.
+2. **Deploy to Azure:**
+   ```bash
+   az webapp deploy --name loadhitch --resource-group LoadHitch --src-path ./deploy.zip --type zip
+   ```
+
+3. **Restart the application:**
+   ```bash
+   az webapp restart --name loadhitch --resource-group LoadHitch
+   ```
+
+### Post-Deployment Configuration
+
+After deployment, configure the following in Azure Portal:
+
+1. **Application Settings** → Add connection strings and JWT configuration
+2. **Authentication** → Configure Google OAuth redirect URIs
+3. **Monitoring** → Enable Application Insights for production monitoring
+4. **Custom Domain** (optional) → Configure SSL certificate and custom domain
+
+---
 
 
-Notes & troubleshooting
 
-- If `dotnet test` fails with `net::ERR_CONNECTION_REFUSED`, either run the helper (it starts the app) or start the app yourself and set `E2E_BASEURL` before running tests.
-- If `e2e-report.html` isn't generated, open the TRX in Visual Studio or add a repo-local TRX→HTML tool (the helper attempts to run `trx2html` and will try to restore a dotnet tool if missing).
-- Recorded videos may be small/blank for very short tests; prefer the Playwright trace + screenshots. To improve video output, tests can wait for `LoadState.NetworkIdle` or you can increase the post-test flush delay in the Playwright test helper.
-
-## Getting Started (Local Setup)
-
-Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
+## Getting Started
 
 ### Prerequisites
 
-You will need the following software installed on your machine:
--   [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
--   [Visual Studio 2022](https://visualstudio.microsoft.com/vs/) or [Visual Studio Code](https://code.visualstudio.com/)
--   A local [PostgreSQL](https://www.postgresql.org/download/) instance
+Ensure you have the following installed:
+-   [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) (version 8.0 or later)
+-   [PostgreSQL 14+](https://www.postgresql.org/download/)
+-   IDE: [Visual Studio 2022](https://visualstudio.microsoft.com/vs/) or [Visual Studio Code](https://code.visualstudio.com/) with C# extension
 
-### Installation & Setup
+### Local Development Setup
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/thandosim/cse325t12Project.git
-    cd cse325t12Project
+    git clone https://github.com/BrightonDube/LoadHitchZa.git
+    cd LoadHitchZa
     ```
 
-2.  **Configure the Database Connection:**
-    -   Create a new, empty database in your local PostgreSQL instance (e.g., `loadhitch_dev`).
-    -   Open the `appsettings.Development.json` file located in the `src/LoadHitch.Web` project.
-    -   Update the `DefaultConnection` string with your local PostgreSQL credentials:
-        ```json
-        "ConnectionStrings": {
-          "DefaultConnection": "Host=localhost;Database=loadhitch_dev;Username=your_username;Password=your_password"
-        }
-        ```
+2.  **Configure Database Connection:**
+    
+    Create or update `appsettings.Development.json`:
+    ```json
+    {
+      "ConnectionStrings": {
+        "DefaultConnection": "Host=localhost;Database=loadhitch_dev;Username=your_username;Password=your_password"
+      },
+      "Jwt": {
+        "SigningKey": "your-secure-signing-key-min-32-chars",
+        "Issuer": "https://localhost:7218",
+        "Audience": "loadhitch-api"
+      }
+    }
+    ```
 
-3.  **Restore Dependencies and Apply Migrations:**
-    -   Open a terminal in the root directory of the repository.
-    -   Restore the .NET packages:
-        ```bash
-        dotnet restore
-        ```
-    -   Apply the Entity Framework migrations to create the database schema:
-        ```bash
-        dotnet ef database update --project src/LoadHitch.Web
-        ```
+3.  **Initialize Database:**
+    ```bash
+    dotnet restore
+    dotnet ef database update
+    ```
+    
+    This will create the database schema and seed initial data (admin user, sample drivers, and loads).
 
 4.  **Run the Application:**
     ```bash
-    dotnet run --project src/LoadHitch.Web
+    dotnet run
     ```
-    The application will be running at `https://localhost:7XXX` and `http://localhost:5XXX`.
+    
+    The application will be available at:
+    - HTTPS: `https://localhost:7218`
+    - HTTP: `http://localhost:5000`
 
-### Azure PostgreSQL connection
+### Environment Variables
 
-The Blazor Server app now reads its production database credentials from an `.env` file so secrets never live in source control.
+For production deployment, configure these environment variables:
 
-1. Copy `.env` from the project root (or create it if missing) and keep it local. Git already ignores the file.
-2. Replace `REPLACE_ME` in the `AZURE_POSTGRES_CONNECTION` entry with the actual password for `lhadmin@loadhitch`:
+```bash
+ConnectionStrings__DefaultConnection="Server=your-server;Database=your-db;..."
+Jwt__SigningKey="your-production-signing-key"
+Jwt__Issuer="https://your-domain.com"
+Jwt__Audience="loadhitch-api"
+Authentication__Google__ClientId="your-google-client-id"
+Authentication__Google__ClientSecret="your-google-client-secret"
+ASPNETCORE_ENVIRONMENT="Production"
+```
 
-   ```env
-   AZURE_POSTGRES_CONNECTION="Server=loadhitch.postgres.database.azure.com;Database=postgres;Port=5432;User Id=lhadmin;Password=<your password>;Ssl Mode=Require;"
-   ```
+---
 
-3. Run `dotnet restore` (first time only) and `dotnet run`. The home page will display whether the Azure PostgreSQL database can be reached.
+## Demo Credentials
 
-## Usage
+Use these pre-configured accounts to explore the application:
 
-Once the application is running, you can explore its features:
--   **Register an Account:** You can create separate accounts with the **Customer** and **Driver** roles to see the different features available to each.
--   **As a Customer:** Log in and navigate to the "Post a Load" page to create a new shipping job. You can manage your posts from the "My Loads" dashboard.
--   **As a Driver:** Log in and post your availability on the "Trucks Dashboard". You can then browse the "Loads Dashboard" to find and claim jobs.
+### Administrator Access
+```
+Email:    admin@loadhitch.com
+Password: Admin@123456!
+Access:   Full system administration, user management, analytics
+```
 
-## Contributors
+### Driver Accounts
+```
+Email:    driver1@loadhitch.com
+Password: Driver@123456!
+Fleet:    Flatbed truck (T001)
 
-This project was a collaborative effort by the following team members:
+Email:    driver2@loadhitch.com
+Password: Driver@123456!
+Fleet:    Box truck (T002)
 
-| Name                      | Role                              |
-| ------------------------- | --------------------------------- |
-| **Thandokuhle Simelane**  | Project Lead / Product Owner      |
-| **Ivan Sembetya**         | Backend & Auth Lead               |
-| **George Omondi Olwal**   | Frontend (Blazor) Lead            |
-| **Brighton Dube**         | DevOps & Deployment Lead          |
-| **Tinashe Allan Kutenaire**| QA & Documentation Lead           |
+Email:    driver3@loadhitch.com
+Password: Driver@123456!
+Fleet:    Tanker truck (T003)
+
+Email:    driver4@loadhitch.com
+Password: Driver@123456!
+Fleet:    Refrigerated truck (T004)
+```
+
+### Customer Accounts
+```
+Email:    customer1@loadhitch.com
+Password: Customer@123456!
+Loads:    Electronics shipment, Steel beams
+
+Email:    customer2@loadhitch.com
+Password: Customer@123456!
+Loads:    Liquid chemicals
+
+Email:    customer3@loadhitch.com
+Password: Customer@123456!
+Loads:    Frozen food, Furniture
+```
+
+---
+
+## Architecture
+
+### Application Structure
+
+```
+LoadHitchZa/
+├── Components/           # Blazor components and pages
+│   ├── Pages/           # Routable pages (Driver, Customer, Admin dashboards)
+│   ├── Layout/          # Application layout and navigation
+│   └── Shared/          # Reusable UI components
+├── Controllers/         # API controllers
+├── Data/               # DbContext and data access
+├── Models/             # Domain models and DTOs
+├── Services/           # Business logic and services
+├── Migrations/         # EF Core database migrations
+└── wwwroot/           # Static assets (CSS, JS, images)
+```
+
+### Database Schema
+
+Key entities:
+- **Users** (ApplicationUser with role-based access)
+- **Loads** (Freight listings with status tracking)
+- **Trucks** (Driver fleet information)
+- **Bookings** (Load-to-truck assignments)
+- **ActivityLogs** (Audit trail)
+- **RefreshTokens** (JWT token management)
+
+---
+
+## Contributing
+
+We welcome contributions! Please follow these guidelines:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+### Code Standards
+- Follow C# coding conventions
+- Write unit tests for new features
+- Update documentation as needed
+- Ensure all tests pass before submitting PR
+
+---
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
 
-Role	Email	Password
-Admin	admin@loadhitch.com	Admin@123456!
-Driver	driver@loadhitch.com	Driver@123456!
-Customer	customer@loadhitch.com	Customer@123456!
+---
 
-Email: testauth999@example.com
-Password: Test@12345!
-Role: Customer
+## Support & Contact
 
+For questions, issues, or feature requests:
+- **GitHub Issues:** [https://github.com/BrightonDube/LoadHitchZa/issues](https://github.com/BrightonDube/LoadHitchZa/issues)
+- **Live Demo:** [https://loadhitch.azurewebsites.net](https://loadhitch.azurewebsites.net)
 
-Role	Email	Password	Notes
-Admin	admin@loadhitch.com	Admin@123456!	System administrator
-Driver	driver1@loadhitch.com	Driver@123456!	Owns Truck T001 (Flatbed)
-Driver	driver2@loadhitch.com	Driver@123456!	Owns Truck T002 (Box Truck)
-Driver	driver3@loadhitch.com	Driver@123456!	Owns Truck T003 (Tanker)
-Driver	driver4@loadhitch.com	Driver@123456!	Owns Truck T004 (Refrigerated)
-Customer	customer1@loadhitch.com	Customer@123456!	Has 2 loads (Electronics, Steel Beams)
-Customer	customer2@loadhitch.com	Customer@123456!	Has 1 load (Liquid Chemicals)
-Customer	customer3@loadhitch.com	Customer@123456!	Has 2 loads (Frozen Food, Furniture)
-Customer	testauth999@example.com	Test@12345!	Extra test account
+---
+
+**Built with ❤️ using .NET 8 and Blazor Server**
