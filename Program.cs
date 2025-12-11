@@ -15,6 +15,7 @@ using t12Project.Middleware;
 using t12Project.Models;
 using t12Project.Options;
 using t12Project.Services;
+using t12Project.Services.PayFast;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using System.IO.Compression;
@@ -156,6 +157,12 @@ builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<RealtimeNotificationService>();
 builder.Services.AddScoped<LocationTrackingService>();
 builder.Services.AddScoped<LoadLifecycleService>();
+builder.Services.AddScoped<PricingService>();
+builder.Services.AddScoped<PaymentService>();
+
+// Configure PayFast settings
+builder.Services.Configure<PayFastSettings>(builder.Configuration.GetSection("PayFast"));
+builder.Services.AddScoped<PayFastService>();
 
 // Add SignalR for real-time tracking with production optimizations
 builder.Services.AddSignalR(options =>
@@ -198,8 +205,7 @@ builder.Services.Configure<GzipCompressionProviderOptions>(options =>
 builder.Services.AddResponseCaching();
 
 // Add health checks
-builder.Services.AddHealthChecks()
-    .AddDbContextCheck<ApplicationDbContext>("database");
+builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 

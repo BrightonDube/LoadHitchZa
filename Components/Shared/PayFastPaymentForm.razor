@@ -1,0 +1,75 @@
+@using t12Project.Services.PayFast
+
+<div class="payfast-payment-container">
+    @if (PaymentRequest != null)
+    {
+        <div class="payment-summary mb-4">
+            <h3 class="text-xl font-bold mb-2">Payment Summary</h3>
+            <div class="bg-white p-4 rounded-lg shadow">
+                <div class="flex justify-between mb-2">
+                    <span>Amount:</span>
+                    <span class="font-bold">R@PaymentRequest.amount</span>
+                </div>
+                <div class="flex justify-between mb-2">
+                    <span>Item:</span>
+                    <span>@PaymentRequest.item_name</span>
+                </div>
+                <div class="text-sm text-gray-600 mt-2">
+                    @PaymentRequest.item_description
+                </div>
+            </div>
+        </div>
+
+        <form action="@ProcessUrl" method="post" id="payfast-form" class="payfast-form">
+            @foreach (var field in PaymentRequest.GetFormFields())
+            {
+                @if (!string.IsNullOrEmpty(field.Value))
+                {
+                    <input type="hidden" name="@field.Key" value="@field.Value" />
+                }
+            }
+            
+            <button type="submit" class="btn btn-primary w-full py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg transition">
+                <span class="flex items-center justify-center">
+                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                    Pay R@PaymentRequest.amount with PayFast
+                </span>
+            </button>
+        </form>
+
+        <div class="mt-4 text-center">
+            <div class="flex items-center justify-center text-sm text-gray-600">
+                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                </svg>
+                Secured by PayFast - South Africa's leading payment gateway
+            </div>
+        </div>
+
+        @if (AutoSubmit)
+        {
+            <script>
+                document.getElementById('payfast-form').submit();
+            </script>
+        }
+    }
+    else
+    {
+        <div class="text-center py-8">
+            <p class="text-gray-600">Loading payment details...</p>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public PayFastPaymentRequest? PaymentRequest { get; set; }
+
+    [Parameter]
+    public bool AutoSubmit { get; set; } = false;
+
+    [Parameter]
+    public string ProcessUrl { get; set; } = "https://sandbox.payfast.co.za/eng/process";
+}

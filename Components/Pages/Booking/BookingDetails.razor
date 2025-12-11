@@ -106,7 +106,7 @@
                                 <div class="grid grid-cols-2 gap-4 pt-4 border-t border-slate-200">
                                     <div>
                                         <p class="text-xs font-medium text-slate-500 uppercase">Weight</p>
-                                        <p class="mt-1 text-sm font-semibold text-slate-900">@_booking.Load.WeightLbs.ToString("N0") lbs</p>
+                                        <p class="mt-1 text-sm font-semibold text-slate-900">@_booking.Load.WeightKg.ToString("N0") kg</p>
                                     </div>
                                     <div>
                                         <p class="text-xs font-medium text-slate-500 uppercase">Cargo Type</p>
@@ -373,3 +373,4 @@
         _ => "inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-800"
     };
 }
+

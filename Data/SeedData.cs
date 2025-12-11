@@ -201,7 +201,7 @@ public static class SeedData
                     DropoffLatitude = -33.9139m,
                     DropoffLongitude = 18.6289m,
                     PickupDate = DateTimeOffset.UtcNow.AddDays(1),
-                    WeightLbs = 2500,
+                    WeightKg = 1136,
                     Description = "Complete office furniture set - desks, chairs, filing cabinets. Handle with care.",
                     CargoType = "General",
                     CustomerId = customers[0].Id
@@ -217,7 +217,7 @@ public static class SeedData
                     DropoffLatitude = -33.8694m,
                     DropoffLongitude = 18.5686m,
                     PickupDate = DateTimeOffset.UtcNow.AddHours(6),
-                    WeightLbs = 1200,
+                    WeightKg = 545,
                     Description = "Fragile medical diagnostic equipment. Temperature controlled transport preferred.",
                     CargoType = "Fragile",
                     CustomerId = customers[1].Id
@@ -233,7 +233,7 @@ public static class SeedData
                     DropoffLatitude = -33.9789m,
                     DropoffLongitude = 18.4644m,
                     PickupDate = DateTimeOffset.UtcNow.AddDays(2),
-                    WeightLbs = 3500,
+                    WeightKg = 1591,
                     Description = "Industrial kitchen equipment and frozen food supplies. Refrigerated transport required.",
                     CargoType = "Refrigerated",
                     CustomerId = customers[2].Id
@@ -249,7 +249,7 @@ public static class SeedData
                     DropoffLatitude = -33.8956m,
                     DropoffLongitude = 18.5167m,
                     PickupDate = DateTimeOffset.UtcNow.AddDays(1),
-                    WeightLbs = 8000,
+                    WeightKg = 3636,
                     Description = "Cement bags, bricks, and steel reinforcement bars. Flatbed truck required.",
                     CargoType = "Flatbed",
                     CustomerId = customers[0].Id
@@ -265,7 +265,7 @@ public static class SeedData
                     DropoffLatitude = -33.8656m,
                     DropoffLongitude = 18.6456m,
                     PickupDate = DateTimeOffset.UtcNow.AddDays(3),
-                    WeightLbs = 1800,
+                    WeightKg = 818,
                     Description = "Consumer electronics - TVs, computers, tablets. Extremely fragile, insurance required.",
                     CargoType = "Fragile",
                     CustomerId = customers[1].Id
@@ -281,7 +281,7 @@ public static class SeedData
                     DropoffLatitude = -33.9356m,
                     DropoffLongitude = 18.4108m,
                     PickupDate = DateTimeOffset.UtcNow.AddHours(12),
-                    WeightLbs = 2200,
+                    WeightKg = 1000,
                     Description = "Fresh fruits and vegetables for restaurant. Early morning delivery preferred.",
                     CargoType = "Refrigerated",
                     CustomerId = customers[2].Id
@@ -297,7 +297,7 @@ public static class SeedData
                     DropoffLatitude = -33.9349m,
                     DropoffLongitude = 18.4956m,
                     PickupDate = DateTimeOffset.UtcNow.AddDays(2),
-                    WeightLbs = 5500,
+                    WeightKg = 2500,
                     Description = "Commercial gym equipment - treadmills, weight machines, free weights. Heavy lift required.",
                     CargoType = "General",
                     CustomerId = customers[0].Id
@@ -313,7 +313,7 @@ public static class SeedData
                     DropoffLatitude = -33.8778m,
                     DropoffLongitude = 18.5744m,
                     PickupDate = DateTimeOffset.UtcNow.AddDays(1),
-                    WeightLbs = 950,
+                    WeightKg = 432,
                     Description = "Temperature-sensitive pharmaceuticals. Must maintain 2-8°C throughout transit.",
                     CargoType = "Refrigerated",
                     CustomerId = customers[1].Id
@@ -329,7 +329,7 @@ public static class SeedData
                     DropoffLatitude = -33.8767m,
                     DropoffLongitude = 18.4983m,
                     PickupDate = DateTimeOffset.UtcNow.AddDays(4),
-                    WeightLbs = 3200,
+                    WeightKg = 1455,
                     Description = "Car engine parts and accessories for dealership. Some items fragile.",
                     CargoType = "General",
                     CustomerId = customers[2].Id
@@ -345,7 +345,7 @@ public static class SeedData
                     DropoffLatitude = -33.9267m,
                     DropoffLongitude = 18.3861m,
                     PickupDate = DateTimeOffset.UtcNow.AddDays(5),
-                    WeightLbs = 1600,
+                    WeightKg = 727,
                     Description = "Premium wine and spirits shipment. Fragile glass bottles, careful handling essential.",
                     CargoType = "Fragile",
                     CustomerId = customers[0].Id
@@ -361,7 +361,7 @@ public static class SeedData
                     DropoffLatitude = -33.8328m,
                     DropoffLongitude = 18.6489m,
                     PickupDate = DateTimeOffset.UtcNow.AddDays(3),
-                    WeightLbs = 2800,
+                    WeightKg = 1273,
                     Description = "Fabric rolls and clothing samples for fashion retailer.",
                     CargoType = "General",
                     CustomerId = customers[1].Id
@@ -377,7 +377,7 @@ public static class SeedData
                     DropoffLatitude = -33.8667m,
                     DropoffLongitude = 18.7000m,
                     PickupDate = DateTimeOffset.UtcNow.AddHours(8),
-                    WeightLbs = 4200,
+                    WeightKg = 1909,
                     Description = "Fresh frozen catch from local fishing vessels. Must maintain -18°C.",
                     CargoType = "Refrigerated",
                     CustomerId = customers[2].Id
@@ -404,7 +404,7 @@ public static class SeedData
                     AvailableFrom = DateTimeOffset.UtcNow,
                     AvailableTo = DateTimeOffset.UtcNow.AddDays(7),
                     EquipmentType = "Flatbed",
-                    MaxWeightLbs = 20000,
+                    MaxWeightKg = 20000,
                     IsActive = true,
                     Notes = "Daily local route, can handle construction materials and heavy equipment"
                 },
@@ -420,7 +420,7 @@ public static class SeedData
                     AvailableFrom = DateTimeOffset.UtcNow,
                     AvailableTo = DateTimeOffset.UtcNow.AddDays(14),
                     EquipmentType = "Refrigerated",
-                    MaxWeightLbs = 15000,
+                    MaxWeightKg = 15000,
                     IsActive = true,
                     Notes = "Refrigerated transport for perishables, restaurants, and medical supplies"
                 },
@@ -436,7 +436,7 @@ public static class SeedData
                     AvailableFrom = DateTimeOffset.UtcNow,
                     AvailableTo = DateTimeOffset.UtcNow.AddDays(10),
                     EquipmentType = "Box Truck",
-                    MaxWeightLbs = 18000,
+                    MaxWeightKg = 8180,
                     IsActive = true,
                     Notes = "Enclosed truck for electronics, furniture, and general cargo"
                 },
@@ -452,7 +452,7 @@ public static class SeedData
                     AvailableFrom = DateTimeOffset.UtcNow.AddDays(1),
                     AvailableTo = DateTimeOffset.UtcNow.AddDays(8),
                     EquipmentType = "General",
-                    MaxWeightLbs = 22000,
+                    MaxWeightKg = 10000,
                     IsActive = true,
                     Notes = "Flexible route serving industrial areas, can accommodate various cargo types"
                 },
@@ -468,7 +468,7 @@ public static class SeedData
                     AvailableFrom = DateTimeOffset.UtcNow.AddDays(2),
                     AvailableTo = DateTimeOffset.UtcNow.AddDays(9),
                     EquipmentType = "Flatbed",
-                    MaxWeightLbs = 25000,
+                    MaxWeightKg = 11360,
                     IsActive = true,
                     Notes = "Heavy-duty flatbed for building materials and oversized cargo"
                 },
@@ -484,7 +484,7 @@ public static class SeedData
                     AvailableFrom = DateTimeOffset.UtcNow,
                     AvailableTo = DateTimeOffset.UtcNow.AddDays(5),
                     EquipmentType = "Refrigerated",
-                    MaxWeightLbs = 15000,
+                    MaxWeightKg = 15000,
                     IsActive = true,
                     Notes = "Seafood and frozen goods specialist route from harbour"
                 },
@@ -500,7 +500,7 @@ public static class SeedData
                     AvailableFrom = DateTimeOffset.UtcNow.AddDays(1),
                     AvailableTo = DateTimeOffset.UtcNow.AddDays(6),
                     EquipmentType = "General",
-                    MaxWeightLbs = 18000,
+                    MaxWeightKg = 8180,
                     IsActive = true,
                     Notes = "Express route to Pretoria, 2-day delivery"
                 },
@@ -516,7 +516,7 @@ public static class SeedData
                     AvailableFrom = DateTimeOffset.UtcNow.AddDays(2),
                     AvailableTo = DateTimeOffset.UtcNow.AddDays(8),
                     EquipmentType = "Flatbed",
-                    MaxWeightLbs = 25000,
+                    MaxWeightKg = 11360,
                     IsActive = true,
                     Notes = "Heavy haul capacity, construction materials welcome"
                 }
@@ -557,3 +557,4 @@ public static class SeedData
 
 
 }
+

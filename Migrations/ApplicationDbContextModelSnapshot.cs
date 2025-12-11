@@ -388,7 +388,7 @@ namespace t12Project.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<decimal>("MaxWeightLbs")
+                    b.Property<decimal>("MaxWeightKg")
                         .HasColumnType("numeric");
 
                     b.Property<string>("Notes")
@@ -425,6 +425,9 @@ namespace t12Project.Migrations
                     b.Property<string>("AssignedDriverId")
                         .HasColumnType("text");
 
+                    b.Property<decimal?>("CalculatedPrice")
+                        .HasColumnType("decimal(10,2)");
+
                     b.Property<string>("CargoType")
                         .IsRequired()
                         .HasMaxLength(60)
@@ -440,6 +443,9 @@ namespace t12Project.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<decimal?>("CustomerOfferPrice")
+                        .HasColumnType("decimal(10,2)");
+
                     b.Property<DateTimeOffset?>("DeliveredAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -450,6 +456,12 @@ namespace t12Project.Migrations
                         .IsRequired()
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)");
+
+                    b.Property<double?>("DistanceKm")
+                        .HasColumnType("double precision");
+
+                    b.Property<decimal?>("DriverEarnings")
+                        .HasColumnType("decimal(10,2)");
 
                     b.Property<decimal>("DropoffLatitude")
                         .HasColumnType("numeric");
@@ -464,6 +476,12 @@ namespace t12Project.Migrations
 
                     b.Property<int?>("EstimatedTimeOfArrivalMinutes")
                         .HasColumnType("integer");
+
+                    b.Property<decimal?>("FinalPrice")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<Guid?>("PaymentId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset?>("PickedUpAt")
                         .HasColumnType("timestamp with time zone");
@@ -492,14 +510,16 @@ namespace t12Project.Migrations
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)");
 
-                    b.Property<double>("WeightLbs")
-                        .HasColumnType("double precision");
+                    b.Property<int>("WeightKg")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
                     b.HasIndex("AssignedDriverId");
 
                     b.HasIndex("CustomerId");
+
+                    b.HasIndex("PaymentId");
 
                     b.ToTable("Loads");
                 });
@@ -585,6 +605,80 @@ namespace t12Project.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Notifications");
+                });
+
+            modelBuilder.Entity("t12Project.Models.Payment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<string>("CardBrand")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("CardLast4")
+                        .HasMaxLength(4)
+                        .HasColumnType("character varying(4)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("CustomerId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("DriverId")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("DriverPayout")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<Guid>("LoadId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime?>("PaidAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<decimal>("PlatformFee")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<DateTime?>("RefundedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("ReleasedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("TransactionId")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("DriverId");
+
+                    b.HasIndex("LoadId");
+
+                    b.ToTable("Payment");
                 });
 
             modelBuilder.Entity("t12Project.Models.Rating", b =>
@@ -838,9 +932,15 @@ namespace t12Project.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("t12Project.Models.Payment", "Payment")
+                        .WithMany()
+                        .HasForeignKey("PaymentId");
+
                     b.Navigation("AssignedDriver");
 
                     b.Navigation("Customer");
+
+                    b.Navigation("Payment");
                 });
 
             modelBuilder.Entity("t12Project.Models.LocationUpdate", b =>
@@ -869,6 +969,31 @@ namespace t12Project.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("t12Project.Models.Payment", b =>
+                {
+                    b.HasOne("t12Project.Models.ApplicationUser", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("t12Project.Models.ApplicationUser", "Driver")
+                        .WithMany()
+                        .HasForeignKey("DriverId");
+
+                    b.HasOne("t12Project.Models.Load", "Load")
+                        .WithMany()
+                        .HasForeignKey("LoadId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Driver");
+
+                    b.Navigation("Load");
                 });
 
             modelBuilder.Entity("t12Project.Models.Rating", b =>

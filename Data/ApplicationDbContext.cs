@@ -19,6 +19,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<DriverRoute> DriverRoutes => Set<DriverRoute>();
     public DbSet<Rating> Ratings => Set<Rating>();
 
+    // New feature entities
+    public DbSet<Payment> Payments => Set<Payment>();
+    public DbSet<DriverLocation> DriverLocations => Set<DriverLocation>();
+    public DbSet<PricingTier> PricingTiers => Set<PricingTier>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

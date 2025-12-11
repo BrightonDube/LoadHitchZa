@@ -32,15 +32,59 @@ public class Load
 
     public DateTimeOffset PickupDate { get; set; } = DateTimeOffset.UtcNow;
 
-    public double WeightLbs { get; set; }
+    /// <summary>
+    /// Weight in kilograms (NOT pounds)
+    /// </summary>
+    public int WeightKg { get; set; }
 
-    // NEW: Cargo description (e.g., fragile boxes, liquids, flatbed load)
+    /// <summary>
+    /// Cargo description (e.g., fragile boxes, liquids, flatbed load)
+    /// </summary>
     [MaxLength(512)]
     public string Description { get; set; } = string.Empty;
 
-    // Optional: quick category for filtering (liquid, fragile, flatbed, etc.)
+    /// <summary>
+    /// Load category: Electronics, Furniture, Food, Construction, Vehicles, Chemicals, General, Fragile
+    /// </summary>
     [MaxLength(60)]
     public string CargoType { get; set; } = "General";
+
+    /// <summary>
+    /// Calculated road distance in kilometers
+    /// </summary>
+    public double? DistanceKm { get; set; }
+
+    /// <summary>
+    /// Customer's price offer in ZAR (South African Rand)
+    /// </summary>
+    [Column(TypeName = "decimal(10,2)")]
+    public decimal? CustomerOfferPrice { get; set; }
+
+    /// <summary>
+    /// Calculated base price (before customer adjustment)
+    /// </summary>
+    [Column(TypeName = "decimal(10,2)")]
+    public decimal? CalculatedPrice { get; set; }
+
+    /// <summary>
+    /// Final agreed price in ZAR
+    /// </summary>
+    [Column(TypeName = "decimal(10,2)")]
+    public decimal? FinalPrice { get; set; }
+
+    /// <summary>
+    /// Driver earnings after platform fee (15%)
+    /// </summary>
+    [Column(TypeName = "decimal(10,2)")]
+    public decimal? DriverEarnings { get; set; }
+
+    /// <summary>
+    /// Associated payment
+    /// </summary>
+    public Guid? PaymentId { get; set; }
+
+    [ForeignKey(nameof(PaymentId))]
+    public Payment? Payment { get; set; }
 
     [Required]
     public string CustomerId { get; set; } = default!;

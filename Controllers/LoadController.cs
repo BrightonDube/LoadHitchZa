@@ -58,7 +58,7 @@ public class LoadController : ControllerBase
                 l.DropoffLatitude,
                 l.DropoffLongitude,
                 l.PickupDate,
-                l.WeightLbs,
+                l.WeightKg,
                 l.Description,
                 l.CargoType,
                 CustomerName = l.Customer!.FullName,
@@ -91,7 +91,7 @@ public class LoadController : ControllerBase
             l.DropoffLatitude,
             l.DropoffLongitude,
             l.PickupDate,
-            l.WeightLbs,
+            l.WeightKg,
             l.Description,
             l.CargoType,
             CustomerName = l.Customer?.FullName,
@@ -123,7 +123,7 @@ public class LoadController : ControllerBase
             l.DropoffLatitude,
             l.DropoffLongitude,
             l.PickupDate,
-            l.WeightLbs,
+            l.WeightKg,
             l.Description,
             l.CargoType,
             DriverName = l.AssignedDriver?.FullName,
@@ -176,7 +176,7 @@ public class LoadController : ControllerBase
             DropoffLatitude = request.DropoffLatitude,
             DropoffLongitude = request.DropoffLongitude,
             PickupDate = request.PickupDate,
-            WeightLbs = request.WeightLbs,
+            WeightKg = request.WeightKg,
             Description = request.Description,
             CargoType = request.CargoType,
             CustomerId = customerId,
@@ -452,7 +452,7 @@ public record CreateLoadRequest(
     decimal DropoffLatitude,
     decimal DropoffLongitude,
     DateTimeOffset PickupDate,
-    double WeightLbs,
+    int WeightKg,
     string Description,
     string CargoType);
 
@@ -460,3 +460,4 @@ public record AcceptLoadRequest(int EstimatedMinutes = 30);
 public record LocationUpdateRequest(decimal Latitude, decimal Longitude);
 public record UpdateSequenceRequest(List<LoadSequence> LoadSequences);
 public record LoadSequence(Guid LoadId, int Sequence);
+

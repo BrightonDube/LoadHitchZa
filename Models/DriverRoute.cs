@@ -35,8 +35,8 @@ public class DriverRoute
     [MaxLength(60)]
     public string EquipmentType { get; set; } = "General";
 
-    // Max weight they can carry
-    public decimal MaxWeightLbs { get; set; }
+    // Max weight they can carry in kilograms
+    public decimal MaxWeightKg { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 }

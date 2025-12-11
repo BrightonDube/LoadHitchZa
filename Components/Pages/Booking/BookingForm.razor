@@ -83,7 +83,7 @@
                     </div>
                     <div>
                         <p class="text-slate-500">Capacity</p>
-                        <p class="font-medium text-slate-900">@truck.CapacityLbs.ToString("N0") lbs</p>
+                        <p class="font-medium text-slate-900">@truck.CapacityLbs.ToString("N0") kg</p>
                     </div>
                     <div>
                         <p class="text-slate-500">Status</p>
@@ -117,7 +117,7 @@
                     </div>
                     <div>
                         <p class="text-slate-500">Weight</p>
-                        <p class="font-medium text-slate-900">@load.WeightLbs.ToString("N0") lbs</p>
+                        <p class="font-medium text-slate-900">@load.WeightKg.ToString("N0") kg</p>
                     </div>
                     <div>
                         <p class="text-slate-500">Current Status</p>
@@ -376,7 +376,7 @@
             PickupDate = new DateTimeOffset(_pickupDate.Year, _pickupDate.Month, _pickupDate.Day, 0, 0, 0, TimeSpan.Zero),
             PickupLocation = "To be specified",
             DropoffLocation = "To be specified",
-            WeightLbs = 0,
+            WeightKg = 0,
             CargoType = truck.EquipmentType
         };
 
@@ -488,3 +488,4 @@
         errorMessage = null;
     }
 }
+
